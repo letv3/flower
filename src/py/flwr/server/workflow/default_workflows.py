@@ -14,10 +14,11 @@
 # ==============================================================================
 """Legacy default workflows."""
 
-
 import io
+import os
+import pickle
 import timeit
-from logging import INFO
+from logging import INFO, WARNING
 from typing import Optional, cast
 
 import flwr.common.recordset_compat as compat
@@ -46,7 +47,7 @@ class DefaultWorkflow:
         self.fit_workflow: Workflow = fit_workflow
         self.evaluate_workflow: Workflow = evaluate_workflow
 
-    def __call__(self, driver: Driver, context: Context) -> None:
+    def __call__(self, driver: Driver, context: Context, history_save_path: Optional[str] = None) -> None:
         """Execute the workflow."""
         if not isinstance(context, LegacyContext):
             raise TypeError(
@@ -86,6 +87,14 @@ class DefaultWorkflow:
         end_time = timeit.default_timer()
         elapsed = end_time - start_time
         hist = context.history
+
+        try:
+            log(INFO, f"Saving history to {history_save_path}")
+            with open(history_save_path, mode="w+b") as pkl:
+                pickle.dump(hist, pkl)
+        except (FileExistsError, FileNotFoundError) as e:
+            log(WARNING, f"Error saving history to {history_save_path}")
+
         log(INFO, "")
         log(INFO, "[SUMMARY]")
         log(INFO, "Run finished %s rounds in %.2fs", context.config.num_rounds, elapsed)
