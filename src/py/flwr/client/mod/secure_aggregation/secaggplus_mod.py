@@ -325,7 +325,8 @@ def _setup(
     state.clipping_range = cast(float, sec_agg_param_dict[Key.CLIPPING_RANGE])
     state.target_range = cast(int, sec_agg_param_dict[Key.TARGET_RANGE])
     state.mod_range = cast(int, sec_agg_param_dict[Key.MOD_RANGE])
-    state.max_weight = cast(float, sec_agg_param_dict[Key.MAX_WEIGHT])
+    # state.max_weight = cast(float, sec_agg_param_dict[Key.MAX_WEIGHT])
+    state.max_weight = 2000
 
     # Dictionaries containing node IDs as keys
     # and their respective secret shares as values.
