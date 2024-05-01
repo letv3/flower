@@ -34,6 +34,7 @@ def run(
     server_app_dir: str,
     server_app_attr: Optional[str] = None,
     loaded_server_app: Optional[ServerApp] = None,
+    save_history: Optional[Path] = None,
 ) -> None:
     """Run ServerApp with a given Driver."""
     if not (server_app_attr is None) ^ (loaded_server_app is None):
@@ -65,7 +66,7 @@ def run(
     context = Context(state=RecordSet())
 
     # Call ServerApp
-    server_app(driver=driver, context=context)
+    server_app(driver=driver, context=context, history_save_path=save_history)
 
     log(DEBUG, "ServerApp finished running.")
 
@@ -128,6 +129,13 @@ def run_server_app() -> None:
     server_app_dir = args.dir
     server_app_attr = getattr(args, "server-app")
 
+    
+    save_history = Path(args.save_history)
+    if not save_history.exists():
+        save_history.touch()
+    
+
+
     # Initialize GrpcDriver
     driver = GrpcDriver(
         driver_service_address=args.server,
@@ -137,7 +145,12 @@ def run_server_app() -> None:
     )
 
     # Run the ServerApp with the Driver
-    run(driver=driver, server_app_dir=server_app_dir, server_app_attr=server_app_attr)
+    run(
+        driver=driver, 
+        server_app_dir=server_app_dir, 
+        server_app_attr=server_app_attr, 
+        save_history=save_history,
+    )
 
     # Clean up
     driver.close()
@@ -196,6 +209,13 @@ def _parse_args_run_server_app() -> argparse.ArgumentParser:
         default=None,
         type=str,
         help="The version of the FAB used in the run.",
+    )
+    parser.add_argument(
+        "--save-history",
+        default="history.pkl",
+        type=str,
+        help="The path to save training history"
+        "Default: to history.pkl in current working directory.",
     )
 
     return parser

@@ -15,10 +15,12 @@
 """Flower ServerApp."""
 
 
+import pickle
 from typing import Callable, Optional
 
 from flwr.common import Context, RecordSet
 from flwr.common.logger import warn_preview_feature
+from flwr.server.history import History
 from flwr.server.strategy import Strategy
 
 from .client_manager import ClientManager
@@ -66,17 +68,25 @@ class ServerApp:
         self._client_manager = client_manager
         self._main: Optional[ServerAppCallable] = None
 
-    def __call__(self, driver: Driver, context: Context) -> None:
+    def __call__(self, driver: Driver, context: Context, history_save_path: str) -> None:
         """Execute `ServerApp`."""
         # Compatibility mode
         if not self._main:
-            start_driver(
+            hist: History = start_driver(
                 server=self._server,
                 config=self._config,
                 strategy=self._strategy,
                 client_manager=self._client_manager,
                 driver=driver,
             )
+            try:
+                with open(history_save_path, mode="w+b") as pkl:
+                    pickle.dump(hist, pkl)
+            except (FileExistsError, FileNotFoundError) as e:
+                print(e)
+                pass
+
+
             return
 
         # New execution mode
