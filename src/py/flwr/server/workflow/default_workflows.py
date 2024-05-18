@@ -70,6 +70,7 @@ class DefaultWorkflow:
         context.state.configs_records[MAIN_CONFIGS_RECORD] = cfg
 
         for current_round in range(1, context.config.num_rounds + 1):
+            round_start_time = timeit.default_timer()
             log(INFO, "")
             log(INFO, "[ROUND %s]", current_round)
             cfg[Key.CURRENT_ROUND] = current_round
@@ -82,6 +83,10 @@ class DefaultWorkflow:
 
             # Evaluate round
             self.evaluate_workflow(driver, context)
+
+            round_end_time = timeit.default_timer()
+            round_elapsed = round_end_time - round_start_time
+            log(INFO, "[ROUND %s] Finished in %.2fs", current_round, round_elapsed)
 
         # Bookkeeping and log results
         end_time = timeit.default_timer()
